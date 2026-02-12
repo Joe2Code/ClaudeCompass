@@ -67,7 +67,7 @@ struct DashboardView: View {
             PacingIndicator(pacingPercent: viewModel.snapshot.pacingPercent)
             UsageMeter(percent: viewModel.snapshot.pacingPercent, label: "Today's Pacing")
             UsageMeter(percent: viewModel.snapshot.weeklyPacingPercent, label: "Weekly Usage (estimate)")
-            UsageMeter(percent: viewModel.snapshot.weeklyTimePercent, label: "Week Elapsed")
+            UsageMeter(percent: viewModel.liveWeeklyTimePercent, label: "Week Elapsed")
         }
     }
 

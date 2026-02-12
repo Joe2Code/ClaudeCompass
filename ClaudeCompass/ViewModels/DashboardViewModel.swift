@@ -28,13 +28,25 @@ final class DashboardViewModel {
     var weeklyMessageBudget: Int = 0
     var showStatusIcon: Bool = true
 
+    // MARK: - Live Weekly Time Percent
+
+    /// Always computed from current Date(), independent of snapshot/file reads.
+    var liveWeeklyTimePercent: Double {
+        // Access lastRefresh to establish @Observable dependency (ticks every refresh cycle)
+        _ = lastRefresh
+        let lastReset = UsageSnapshot.lastResetDate(resetDay: weeklyResetDay, resetHour: weeklyResetHour)
+        let elapsed = Date().timeIntervalSince(lastReset)
+        let totalPeriod: TimeInterval = 7 * 24 * 3600
+        return min(max(elapsed / totalPeriod * 100, 0), 100)
+    }
+
     // MARK: - Menu Bar Display
 
     var menuBarText: String {
         switch displayMode {
         case .weekly:
             let usage = Int(snapshot.weeklyPacingPercent)
-            let time = Int(snapshot.weeklyTimePercent)
+            let time = Int(liveWeeklyTimePercent)
             return "\(usage)% · \(time)%"
         case .daily:
             return "\(Int(snapshot.pacingPercent))%"
@@ -140,6 +152,7 @@ final class DashboardViewModel {
     func refresh() {
         isLoading = true
         errorMessage = nil
+        lastRefresh = Date()  // Always update so liveWeeklyTimePercent stays fresh
 
         Task {
             do {
@@ -149,7 +162,6 @@ final class DashboardViewModel {
                     weeklyBudget: weeklyMessageBudget
                 )
                 self.snapshot = snap
-                self.lastRefresh = Date()
 
                 // Check notifications
                 if notificationsEnabled {
